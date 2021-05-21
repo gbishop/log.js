@@ -8,6 +8,9 @@ from bottle import Bottle, request, template, view, response
 from datetime import datetime, timedelta
 from db import with_db, insert
 import os.path as osp
+import json
+
+bottle.TEMPLATE_PATH.insert(0, osp.join(osp.dirname(__file__), "views"))
 
 app = application = Bottle()
 
@@ -36,21 +39,6 @@ def static(filename):
 
 
 bottle.SimpleTemplate.defaults["static"] = static
-
-
-@app.route("/static/<filename:path>", name="static")
-def serveStatic(filename):
-    """
-    Serve static files in development
-    """
-    kwargs = {"root": "./static"}
-    if filename.endswith(".sqlite"):
-        kwargs["mimetype"] = "application/octet-stream"
-    # fake up errors for testing
-    # import random
-    # if random.random() < 0.5:
-    #     return bottle.HTTPError(404, 'bogus')
-    return bottle.static_file(filename, **kwargs)
 
 
 def allow_json(func):
@@ -86,6 +74,101 @@ def log(db):
         message=request.body.getvalue().decode("utf-8"),
     )
     return "ok"
+
+
+def format_message(msg):
+    """
+    Format the json encoded message for printing
+    """
+    return " ".join(format(item) for item in json.loads(msg))
+
+
+def format(item):
+    """
+    Format a single item for printing
+    """
+    if isinstance(item, float):
+        return "{:.3f}".format(item)
+    elif isinstance(item, dict):
+        return str({k: format(v) for k, v in item.items()})
+    elif isinstance(item, (list, tuple)):
+        return str([format(i) for i in item])
+    else:
+        return str(item)
+
+
+@app.get("/log")
+@with_db
+@view("log")
+@allow_json
+def readLog(db):
+    """
+    Display log entries
+    """
+    ips = [
+        item["ip"]
+        for item in db.execute(
+            """
+            select distinct ip from logs order by ip asc
+            """
+        )
+    ]
+    days = [
+        item["day"]  # .strftime("%y/%m/%d")
+        for item in db.execute(
+            """
+            select distinct date(time) as day from logs order by time asc
+            """
+        )
+    ]
+    refs = [
+        item["ref"]
+        for item in db.execute(
+            """
+            select distinct ref from logs order by ref asc
+            """
+        )
+    ]
+    records = db.execute(
+        """
+        select time, ip, ref, message
+        from logs
+        where (ip = :ip or :ip = "All") and
+              (date(time) = :day or :day = "All") and
+              (ref = :ref or :ref = "All")
+        """,
+        {
+            "ip": request.query.ip or "All",
+            "day": request.query.day or "All",
+            "ref": request.query.ref or "All",
+        },
+    ).fetchall()
+    return {
+        "query": request.query,
+        "records": records,
+        "ips": ips,
+        "days": days,
+        "refs": refs,
+        "format": format_message,
+    }
+
+
+@app.route("/<filename:path>", name="static")
+def serveStatic(filename):
+    """
+    Serve static files in development
+    """
+    kwargs = {"root": "."}
+    return bottle.static_file(filename, **kwargs)
+
+
+@app.route("/", name="static")
+def index():
+    """
+    Serve index.html
+    """
+    kwargs = {"root": "."}
+    return bottle.static_file("index.html", **kwargs)
 
 
 class ReverseProxied:
@@ -142,6 +225,13 @@ class StripPathMiddleware:
 
 
 if __name__ == "__main__":
-    bottle.run(
-        app=ReverseProxied(app), reloader=True, debug=True, host="0.0.0.0", port=8055,
-    )
+    from livereload import Server
+
+    bottle.debug(True)
+    server = Server(StripPathMiddleware(app))
+    server.watch(".", ignore=lambda p: p.endswith(".swp") or p.endswith(".db"))
+    server.watch("./views/", ignore=lambda p: p.endswith(".swp") or p.endswith(".db"))
+    server.serve(port=8055, host="0.0.0.0", restart_delay=1)
+    # bottle.run(
+    #     app=ReverseProxied(app), reloader=True, debug=True, host="0.0.0.0", port=8055,
+    # )

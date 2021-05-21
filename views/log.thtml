@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Logs</title>
+    <style>
+      td,
+      th {
+        border-left: 1px solid black;
+        border-right: 1px solid black;
+        padding: 0.1rem 0.5rem;
+      }
+
+			tr:nth-child(even) { background: #eee; }
+
+      table {
+        border-collapse: collapse;
+      }
+    </style>
+    <script>
+      window.addEventListener("load", () =>
+        setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100)
+      );
+    </script>
+  </head>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <th>Message</th>
+          <th>Time</th>
+          <th>IP</th>
+          <th>Referrer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% for row in records: %>
+        <tr>
+          <td>
+            {{format(row['message'])}}
+          </td>
+          <td>{{ row["time"].strftime("%y/%m/%d %H:%M:%S") }}</td>
+          <td>{{ row["ip"] }}</td>
+          <td>{{ row["ref"] }}</td>
+        </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <div>
+      <form action="/log" method="GET">
+        <label>IP:
+        <select name="ip">
+          <% for ip in ['All'] + ips: %>
+          <option value="{{ip}}" {{ ip == query.ip and 'selected' or ''}}>
+            {{ip}}
+          </option>
+          <% end %>
+        </select>
+        </label>
+        <label>Day:
+          <select name="day">
+            <% for day in ['All'] + days: %>
+            <option value="{{day}}" {{ day == query.day and 'selected' or ""}}>
+              {{day}}
+            </option>
+            <% end %>
+          </select>
+        </label>
+        <label>Ref:
+          <select name="ref">
+            <% for ref in ['All'] + refs: %>
+            <option value="{{ref}}" {{ ref == query.ref and 'selected' or ""}}>
+              {{ref}}
+            </option>
+            <% end %>
+          </select>
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+  </body>
+</html>
