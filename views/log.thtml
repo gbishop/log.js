@@ -16,6 +16,9 @@
       table {
         border-collapse: collapse;
       }
+      details {
+        display: inline-block;
+      }
     </style>
     <script>
       window.addEventListener("load", () =>
@@ -37,7 +40,7 @@
         <% for row in records: %>
         <tr>
           <td>
-            {{format(row['message'])}}
+            {{!format(row['message'])}}
           </td>
           <td>{{ row["time"].strftime("%y/%m/%d %H:%M:%S") }}</td>
           <td>{{ row["ip"] }}</td>

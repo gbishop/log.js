@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from db import with_db, insert
 import os.path as osp
 import json
+import html
 
 bottle.TEMPLATE_PATH.insert(0, osp.join(osp.dirname(__file__), "views"))
 
@@ -89,12 +90,12 @@ def format(item):
     """
     if isinstance(item, float):
         return "{:.3f}".format(item)
-    elif isinstance(item, dict):
-        return str({k: format(v) for k, v in item.items()})
-    elif isinstance(item, (list, tuple)):
-        return str([format(i) for i in item])
-    else:
+    elif isinstance(item, (dict, list, tuple)):
+        return f"""<details><summary>Object</summary><pre>{html.escape(json.dumps(item, indent=2), True)}</pre></details>"""
+    elif not isinstance(item, str):
         return str(item)
+    else:
+        return item
 
 
 @app.get("/log")
@@ -114,7 +115,7 @@ def readLog(db):
         )
     ]
     days = [
-        item["day"]  # .strftime("%y/%m/%d")
+        item["day"]
         for item in db.execute(
             """
             select distinct date(time) as day from logs order by time asc
