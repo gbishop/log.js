@@ -1,3 +1,7 @@
+<%
+import os.path as osp
+from urllib.parse import urlparse
+%>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -11,6 +15,9 @@
         padding: 0.1rem 0.5rem;
       }
 
+      td:nth-child(1) {
+        max-width: 50vw;
+      }
 			tr:nth-child(even) { background: #eee; }
 
       table {
@@ -18,6 +25,9 @@
       }
       details {
         display: inline-block;
+      }
+      abbr {
+        text-decoration:blue;
       }
     </style>
     <script>
@@ -37,14 +47,32 @@
         </tr>
       </thead>
       <tbody>
+        <% cd = pr = None %>
         <% for row in records: %>
         <tr>
           <td>
             {{!format(row['message'])}}
           </td>
-          <td>{{ row["time"].strftime("%y/%m/%d %H:%M:%S") }}</td>
+          <% if cd == row["time"].date(): %>
+            <td>{{ row["time"].strftime(" %H:%M:%S") }}</td>
+          <% else: %>
+            <% cd = row["time"].date() %>
+            <td style="font-weight: bold">{{ row["time"].strftime("%y/%m/%d %H:%M:%S") }}</td>
+          <% end %>
           <td>{{ row["ip"] }}</td>
-          <td>{{ row["ref"] }}</td>
+          <%
+             ref = row["ref"]
+             if pr == ref:
+                ref = f'<abbr title="{ref}">&hellip;</abbr>'
+             else:
+               prefix = pr and osp.commonpath([pr, row["ref"]]) or ""
+               if len(prefix):
+                ref = f'<abbr title="{prefix}">&hellip;</abbr>{ref[len(prefix)+1:]}'
+               end
+             end
+             pr = row["ref"]
+          %>
+          <td>{{! ref }}</td>
         </tr>
         <% end %>
       </tbody>
