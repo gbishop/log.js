@@ -125,34 +125,20 @@ def readLog(db):
             """
         )
     ]
-    refs = [
-        item["ref"]
-        for item in db.execute(
-            """
-            select distinct ref from logs order by ref asc
-            """
-        )
-    ]
     records = db.execute(
         """
         select time, ip, ref, message
         from logs
         where (ip = :ip or :ip = "All") and
-              (date(time) = :day or :day = "All") and
-              (ref = :ref or :ref = "All")
+              (date(time) = :day or :day = "All")
         """,
-        {
-            "ip": request.query.ip or "All",
-            "day": request.query.day or "All",
-            "ref": request.query.ref or "All",
-        },
+        {"ip": request.query.ip or "All", "day": request.query.day or "All",},
     ).fetchall()
     return {
         "query": request.query,
         "records": records,
         "ips": ips,
         "days": days,
-        "refs": refs,
         "format": format_message,
     }
 

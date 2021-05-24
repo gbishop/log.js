@@ -21,11 +21,19 @@ from urllib.parse import urlparse
         background:#99badd;
       }
 
-      td:nth-child(1) {
-        max-width: 50vw;
+      th:nth-child(2) {
+        width: 6em;
+      }
+      th:nth-child(3) {
+        width: 8em;
+      }
+      th:nth-child(4) {
+        width: 30vw;
+      }
+      th:nth-child(1) {
+        max-width: 40vw;
       }
       td:nth-child(4),th:nth-child(4) {
-        max-width: 40vw;
         overflow-wrap: anywhere;
       }
 			tr:nth-child(even) { background: #eee; }
@@ -33,6 +41,8 @@ from urllib.parse import urlparse
       table {
         border-collapse: collapse;
         position: relative;
+        table-layout: fixed;
+        width: 100%;
       }
       details {
         display: inline-block;
@@ -126,15 +136,7 @@ from urllib.parse import urlparse
               <% end %>
             </select>
           </th>
-          <th>Referrer
-            <select name="ref">
-              <% for ref in ['All'] + refs: %>
-              <option value="{{ref}}" {{ ref == query.ref and 'selected' or ""}}>
-                {{ref}}
-              </option>
-              <% end %>
-            </select>
-          </th>
+          <th>Referrer</th>
         </tr>
       </thead>
       <tbody>
@@ -148,7 +150,8 @@ from urllib.parse import urlparse
             <td>{{ row["time"].strftime(" %H:%M:%S") }}</td>
           <% else: %>
             <% cd = row["time"].date() %>
-            <td style="font-weight: bold">{{ row["time"].strftime("%y/%m/%d %H:%M:%S") }}</td>
+            <td style="font-weight: bold">{{ row["time"].strftime("%y/%m/%d %H:%M:%S") }}
+            </td>
           <% end %>
           <td>{{ row["ip"] }}</td>
           <%
