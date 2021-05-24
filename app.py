@@ -16,18 +16,6 @@ bottle.TEMPLATE_PATH.insert(0, osp.join(osp.dirname(__file__), "views"))
 
 app = application = Bottle()
 
-# make get_url available in all templates
-def my_get_url(name, user=None, **kwargs):
-    """Add user query to the url if necessary"""
-    url = app.get_url(name, **kwargs)
-    real_user = get_user()
-    if user and user_is_me(real_user) and real_user != user:
-        url = url + f"?user={user}"
-    return url
-
-
-bottle.SimpleTemplate.defaults["get_url"] = my_get_url
-
 
 def static(filename):
     """
@@ -176,15 +164,6 @@ def serveStatic(filename):
     """
     kwargs = {"root": "."}
     return bottle.static_file(filename, **kwargs)
-
-
-@app.route("/", name="static")
-def index():
-    """
-    Serve index.html
-    """
-    kwargs = {"root": "."}
-    return bottle.static_file("index.html", **kwargs)
 
 
 class ReverseProxied:
