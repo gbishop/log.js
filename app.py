@@ -102,7 +102,11 @@ def readLog(db):
     """
     ).fetchone()["count"]
     h = hashlib.sha256()
-    for v in list(request.query.values()) + [str(nrecords)]:
+    for v in [
+        request.query.get("ip", "All"),
+        request.query.get("day", "All"),
+        str(nrecords),
+    ]:
         h.update(v.encode("utf-8"))
     etag = f'"{h.hexdigest()}"'
     if etag == request.headers.get("If-None-Match", "").lstrip("W/"):
