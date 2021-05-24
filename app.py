@@ -10,6 +10,7 @@ from db import with_db, insert
 import os.path as osp
 import json
 import html
+import hashlib
 
 bottle.TEMPLATE_PATH.insert(0, osp.join(osp.dirname(__file__), "views"))
 
@@ -106,6 +107,20 @@ def readLog(db):
     """
     Display log entries
     """
+    # compute the ETag
+    nrecords = db.execute(
+        """
+        select count(*) as count from logs
+    """
+    ).fetchone()["count"]
+    h = hashlib.sha256()
+    for v in list(request.query.values()) + [str(nrecords)]:
+        h.update(v.encode("utf-8"))
+    etag = f'"{h.hexdigest()}"'
+    if etag == request.headers.get("If-None-Match", "").lstrip("W/"):
+        response.status = 304
+        return ""
+    response.headers["ETag"] = etag
     ips = [
         item["ip"]
         for item in db.execute(

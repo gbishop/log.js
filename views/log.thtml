@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 
       table {
         border-collapse: collapse;
+        margin-top: 3em;
       }
       details {
         display: inline-block;
@@ -29,12 +30,15 @@ from urllib.parse import urlparse
       abbr {
         text-decoration:blue;
       }
+      div#controls {
+        position:fixed;
+        top:0;
+        left: 0;
+        background-color:white;
+        padding:0.5em;
+      }
     </style>
-    <script>
-      window.addEventListener("load", () =>
-        setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100)
-      );
-    </script>
+    <script src="viewLog.js"></script>
   </head>
   <body>
     <table>
@@ -77,7 +81,7 @@ from urllib.parse import urlparse
         <% end %>
       </tbody>
     </table>
-    <div>
+    <div id="controls">
       <form action="/log" method="GET">
         <label>IP:
         <select name="ip">
