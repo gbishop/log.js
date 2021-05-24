@@ -206,13 +206,17 @@ class StripPathMiddleware:
 
 
 if __name__ == "__main__":
-    from livereload import Server
+    import sys
 
-    bottle.debug(True)
-    server = Server(StripPathMiddleware(app))
-    server.watch(".", ignore=lambda p: p.endswith(".swp") or p.endswith(".db"))
-    server.watch("./views/", ignore=lambda p: p.endswith(".swp") or p.endswith(".db"))
-    server.serve(port=8055, host="0.0.0.0", restart_delay=1)
-    # bottle.run(
-    #     app=ReverseProxied(app), reloader=True, debug=True, host="0.0.0.0", port=8055,
-    # )
+    if len(sys.argv) == 2 and sys.argv[1] == "-live":
+        from livereload import Server
+
+        bottle.debug(True)
+        server = Server(StripPathMiddleware(app))
+        server.watch(".", ignore=lambda p: p.endswith(".swp") or p.endswith(".db"))
+        server.watch(
+            "./views/", ignore=lambda p: p.endswith(".swp") or p.endswith(".db")
+        )
+        server.serve(port=8055, host="0.0.0.0", restart_delay=1)
+    else:
+        bottle.run(app, port=8055)
