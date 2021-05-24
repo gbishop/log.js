@@ -15,14 +15,24 @@ from urllib.parse import urlparse
         padding: 0.1rem 0.5rem;
       }
 
+      th {
+        position: sticky;
+        top: 0;
+        background:#99badd;
+      }
+
       td:nth-child(1) {
         max-width: 50vw;
+      }
+      td:nth-child(4),th:nth-child(4) {
+        max-width: 40vw;
+        overflow-wrap: anywhere;
       }
 			tr:nth-child(even) { background: #eee; }
 
       table {
         border-collapse: collapse;
-        margin-top: 3em;
+        position: relative;
       }
       details {
         display: inline-block;
@@ -37,17 +47,45 @@ from urllib.parse import urlparse
         background-color:white;
         padding:0.5em;
       }
+      select {
+        max-width: 30vw;
+      }
     </style>
     <script src="viewLog.js"></script>
   </head>
   <body>
+      <form action="/log" method="GET">
     <table>
       <thead>
         <tr>
           <th>Message</th>
-          <th>Time</th>
-          <th>IP</th>
-          <th>Referrer</th>
+          <th>Time
+            <select name="day">
+              <% for day in ['All'] + days: %>
+              <option value="{{day}}" {{ day == query.day and 'selected' or ""}}>
+                {{day}}
+              </option>
+              <% end %>
+            </select>
+          </th>
+          <th>IP
+            <select name="ip">
+              <% for ip in ['All'] + ips: %>
+              <option value="{{ip}}" {{ ip == query.ip and 'selected' or ''}}>
+                {{ip}}
+              </option>
+              <% end %>
+            </select>
+          </th>
+          <th>Referrer
+            <select name="ref">
+              <% for ref in ['All'] + refs: %>
+              <option value="{{ref}}" {{ ref == query.ref and 'selected' or ""}}>
+                {{ref}}
+              </option>
+              <% end %>
+            </select>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -81,37 +119,6 @@ from urllib.parse import urlparse
         <% end %>
       </tbody>
     </table>
-    <div id="controls">
-      <form action="/log" method="GET">
-        <label>IP:
-        <select name="ip">
-          <% for ip in ['All'] + ips: %>
-          <option value="{{ip}}" {{ ip == query.ip and 'selected' or ''}}>
-            {{ip}}
-          </option>
-          <% end %>
-        </select>
-        </label>
-        <label>Day:
-          <select name="day">
-            <% for day in ['All'] + days: %>
-            <option value="{{day}}" {{ day == query.day and 'selected' or ""}}>
-              {{day}}
-            </option>
-            <% end %>
-          </select>
-        </label>
-        <label>Ref:
-          <select name="ref">
-            <% for ref in ['All'] + refs: %>
-            <option value="{{ref}}" {{ ref == query.ref and 'selected' or ""}}>
-              {{ref}}
-            </option>
-            <% end %>
-          </select>
-        </label>
-        <input type="submit" value="Submit" />
       </form>
-    </div>
   </body>
 </html>

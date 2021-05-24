@@ -44,7 +44,5 @@ window.addEventListener("load", () => {
     }
   });
 
-  document.body
-    .querySelector("div#controls")
-    .addEventListener("change", fetchTable);
+  document.body.querySelector("form").addEventListener("change", fetchTable);
 });
