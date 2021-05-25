@@ -11,6 +11,7 @@ import os.path as osp
 import json
 import html
 import hashlib
+import ipaddress
 
 bottle.TEMPLATE_PATH.insert(0, osp.join(osp.dirname(__file__), "views"))
 
@@ -113,14 +114,17 @@ def readLog(db):
         response.status = 304
         return ""
     response.headers["ETag"] = etag
-    ips = [
-        item["ip"]
-        for item in db.execute(
+    ips = sorted(
+        [
+            item["ip"]
+            for item in db.execute(
+                """
+            select distinct ip from logs
             """
-            select distinct ip from logs order by ip asc
-            """
-        )
-    ]
+            )
+        ],
+        key=ipaddress.IPv4Address,
+    )
     days = [
         item["day"]
         for item in db.execute(
